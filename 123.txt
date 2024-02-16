@@ -1,0 +1,134 @@
+mainActivity 
+
+
+
+login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = uname.getText().toString();
+                String password = pwd.getText().toString();
+                int id =  checkUser(new User(name,password));
+                if(id == -1){
+                    Snackbar.make(v,"Username"+ name + "Doesnt Exist", Snackbar.LENGTH_LONG).show();
+                }
+                else{
+                    Snackbar.make(v,"Username"+ name + "Exists", Snackbar.LENGTH_LONG).show();
+                    Intent intent = new Intent(MainActivity.this, SecondActivity.class);
+                    startActivity(intent);
+
+                }
+
+            }
+        });
+
+        db = new DbHandler(MainActivity.this);
+        db.addUser(new User("tejas","khangaonkar"));
+
+    }
+
+    public int checkUser(User user) { return db.checkUser(user); }
+    
+    
+    
+    
+    
+    DbHandler
+    
+    public class DbHandler extends SQLiteOpenHelper {
+
+    private static final int Db_Version = 1;
+    private static final  String Db_name = "users", Table_Name = "user", User_id="id", User_name = "name" , User_password = "password";
+
+    public DbHandler(MainActivity context) {
+        super(context , Db_name, null , Db_Version);
+
+    }
+    public  void onCrete(SQLiteDatabase db){
+        String Create_Table= "CREATE TABLE " + Table_Name + "(" + User_id + "INTEGER PRIMARY KEY," + User_name + "TEXT," + User_password + "TEXT" + ")";
+        db.execSQL(Create_Table);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+
+    }
+
+    public void onUpgrade(SQLiteDatabase db , int oldVersion, int newVersion){
+        db.execSQL("DROP TABLE IF EXISTS "+ Table_Name);
+        onCrete(db);
+    }
+
+
+    public void addUser(User usr) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(User_name,usr.getName());
+        cv.put(User_password,usr.getPassword());
+        db.insert(Table_Name,null,cv);
+        db.close();
+    }
+
+    public int checkUser(User us) {
+        int id = -1;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT id FROM user WHERE name=? AND password=?",new String[]{us.getName(),us.getPassword()});
+        if(cursor.getCount()>0){
+            cursor.moveToFirst();
+            id = cursor.getInt(0);
+            cursor.close();
+        }
+
+
+        return id;
+    }
+}
+
+
+
+USer
+
+
+public class User {
+    String name , password;
+    int id;
+
+    public User(String name, String password) {
+        this.name= name;
+        this.password = password;
+
+    }
+    public User(int id ,String name, String password) {
+        this.name= name;
+        this.password = password;
+        this.id = id;
+
+    }
+
+    //getters and setters
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+}
+
